@@ -1,0 +1,65 @@
+// 配色方案 (护眼)
+$primary-color: #4A90E2;        // 科技蓝 - 主色调
+$success-color: #52C41A;
+$warning-color: #FAAD14;
+$error-color: #FF6B6B;          // 强调色
+
+// 背景色
+$bg-color: #F5F7FA;             // 浅灰白背景
+$card-bg: #FFFFFF;              // 卡片白色
+$dark-bg: #1A1A1A;              // 夜间模式背景
+
+// 文字颜色
+$text-primary: #333333;         // 主要文字
+$text-secondary: #666666;       // 次要文字
+$text-muted: #999999;           // 弱化文字
+$text-light: #FFFFFF;           // 浅色文字
+
+// 边框颜色
+$border-color: #E8E8E8;
+$border-light: #F0F0F0;
+
+// 阴影
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+// 圆角
+$radius-xs: 0.12rem;
+$radius-sm: 0.24rem;
+$radius-md: 0.4rem;
+$radius-lg: 0.8rem;
+$radius-xl: 1.2rem;
+
+// 间距
+$spacing-xs: 0.2rem;
+$spacing-sm: 0.4rem;
+$spacing-md: 0.6rem;
+$spacing-lg: 0.8rem;
+$spacing-xl: 1.2rem;
+
+// 字体大小
+$font-size-xs: 0.32rem;   // 12px
+$font-size-sm: 0.37rem;   // 14px
+$font-size-md: 0.43rem;   // 16px
+$font-size-lg: 0.48rem;   // 18px
+$font-size-xl: 0.53rem;   // 20px
+
+// 行高
+$line-height-sm: 1.5;
+$line-height-md: 1.8;
+$line-height-lg: 2.0;
+
+// 阅读模式背景
+$reading-bg-day: #F8E7D9;     // 羊皮纸色
+$reading-bg-night: #2C2C2C;   // 夜间背景
+$reading-bg-sepia: #F4ECD8;   // 复古色
+
+// 渐变
+$gradient-overlay: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+$gradient-primary: linear-gradient(135deg, $primary-color 0%, darken($primary-color, 10%) 100%);
+
+// 过渡动画
+$transition-fast: 0.2s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.5s ease;
