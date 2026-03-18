@@ -65,7 +65,7 @@
       </div>
     </aside>
 
-    <!-- 导入导出弹窗 -->
+    <!-- 导入导出弹窗 - 使用 nextTick 确保状态同步 -->
     <van-popup 
       v-model:show="showImportExport" 
       position="bottom" 
@@ -77,7 +77,7 @@
       <div class="ie-panel" @click.stop>
         <div class="ie-header">
           <h3>导入导出 RSS 源</h3>
-          <button @click.stop="handleCloseClick" class="close-btn" type="button">
+          <button @click.stop="forceClosePopup" class="close-btn" type="button">
             <van-icon name="cross" size="20" />
           </button>
         </div>
@@ -127,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useFeedStore } from '../stores/feed'
 import { showToast, showLoadingToast, closeToast, showDialog } from 'vant'
@@ -249,32 +249,38 @@ function handleResize() {
 // 弹窗遮罩点击处理
 function handleOverlayClick() {
   console.log('[Overlay] Clicked')
-  handleCloseClick()
+  forceClosePopup()
 }
 
-// 弹窗状态变化监听
-function onPopupUpdate(show) {
-  console.log('[Popup] State changed:', show)
-  if (!show) {
-    console.log('[Popup] Closing...')
-  } else {
-    console.log('[Popup] Opening...')
-  }
-}
-
-// 处理关闭按钮点击
-function handleCloseClick() {
-  console.log('[Close Button] Clicked, forcing close...')
+// 强制关闭弹窗 (使用 nextTick 确保状态同步)
+function forceClosePopup() {
+  console.log('[Force Close] Starting...')
+  
+  // 方法 1: 直接设置
   showImportExport.value = false
   
-  // 双重确认关闭
-  setTimeout(() => {
-    console.log('[Close Button] Timeout check, showImportExport:', showImportExport.value)
+  // 方法 2: nextTick 后再次确认
+  nextTick(() => {
+    console.log('[Force Close] nextTick check, value:', showImportExport.value)
     if (showImportExport.value) {
-      console.warn('[Close Button] Still open, forcing again...')
+      console.warn('[Force Close] Still true in nextTick, forcing again...')
       showImportExport.value = false
+      
+      // 方法 3: 再延迟 50ms 检查
+      setTimeout(() => {
+        console.log('[Force Close] timeout check, value:', showImportExport.value)
+        if (showImportExport.value) {
+          console.error('[Force Close] BUG! Still open after all attempts!')
+          // 最后一次尝试
+          showImportExport.value = false
+        } else {
+          console.log('[Force Close] Successfully closed')
+        }
+      }, 50)
+    } else {
+      console.log('[Force Close] Already closed in nextTick')
     }
-  }, 50)
+  })
 }
 
 // 处理导入按钮点击
