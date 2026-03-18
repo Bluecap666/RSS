@@ -68,13 +68,13 @@
     <!-- 导入导出弹窗 - 使用 v-if 确保完全销毁 -->
     <van-popup 
       v-if="showImportExport"
-      v-model:show="showImportExport" 
+      :show="showImportExport"
       position="bottom" 
       round 
       class="ie-popup"
       :close-on-click-overlay="true"
       :lock-scroll="false"
-      @click-overlay="handleOverlayClick">
+      @update:show="handlePopupUpdate">
       <div class="ie-panel" @click.stop>
         <div class="ie-header">
           <h3>导入导出 RSS 源</h3>
@@ -253,58 +253,37 @@ function handleOverlayClick() {
   forceClosePopup()
 }
 
-// 强制关闭弹窗 (使用 nextTick 确保状态同步)
+// 监听 popup show 状态变化
+function handlePopupUpdate(show) {
+  console.log('[Popup Update] show:', show)
+  if (!show) {
+    forceClosePopup()
+  }
+}
+
+// 强制关闭弹窗 (使用 v-if 确保完全销毁)
 function forceClosePopup() {
   console.log('[Force Close] Starting...')
   
-  // 方法 1: 直接设置
+  // 直接设置为 false,v-if 会自动销毁组件
   showImportExport.value = false
+  console.log('[Force Close] Set showImportExport to false')
   
-  // 方法 2: nextTick 后再次确认
+  // 等待 nextTick 后确认 DOM 是否移除
   nextTick(() => {
-    console.log('[Force Close] nextTick check, value:', showImportExport.value)
-    if (showImportExport.value) {
-      console.warn('[Force Close] Still true in nextTick, forcing again...')
-      showImportExport.value = false
-      
-      // 方法 3: 再延迟 50ms 检查
+    const panelInDOM = document.querySelector('.ie-panel')
+    if (panelInDOM) {
+      console.warn('[Force Close] ⚠️ .ie-panel still in DOM, waiting...')
       setTimeout(() => {
-        console.log('[Force Close] timeout check, value:', showImportExport.value)
-        if (showImportExport.value) {
-          console.error('[Force Close] BUG! Still open after all attempts!')
-          // 检查 DOM 中是否还有 .ie-panel
-          const panelInDOM = document.querySelector('.ie-panel')
-          console.log('[Force Close] .ie-panel in DOM:', panelInDOM !== null)
-          if (panelInDOM) {
-            console.error('[Force Close] .ie-panel still exists in DOM!')
-          }
-          // 最后一次尝试
-          showImportExport.value = false
+        const checkAgain = document.querySelector('.ie-panel')
+        if (checkAgain) {
+          console.error('[Force Close] ❌ ERROR: .ie-panel PERSISTS!')
         } else {
-          console.log('[Force Close] Successfully closed')
-          console.log('[Force Close] .ie-panel removed from DOM')
+          console.log('[Force Close] ✅ .ie-panel finally removed')
         }
-      }, 50)
+      }, 100)
     } else {
-      console.log('[Force Close] Already closed in nextTick')
-      // 立即实际检查 DOM 中是否还有 .ie-panel
-      const checkDOM = document.querySelector('.ie-panel')
-      if (checkDOM) {
-        console.warn('[Force Close] ⚠️ WARNING: .ie-panel still in DOM! Value:', showImportExport.value)
-        console.warn('[Force Close] Element:', checkDOM)
-        // 等待 100ms 再检查一次
-        setTimeout(() => {
-          const checkAgain = document.querySelector('.ie-panel')
-          if (checkAgain) {
-            console.error('[Force Close] ❌ ERROR: .ie-panel PERSISTS in DOM after 100ms!')
-            console.error('[Force Close] This might be a Vant bug')
-          } else {
-            console.log('[Force Close] ✅ .ie-panel finally removed from DOM')
-          }
-        }, 100)
-      } else {
-        console.log('[Force Close] ✅ .ie-panel removed from DOM')
-      }
+      console.log('[Force Close] ✅ .ie-panel removed from DOM')
     }
   })
 }
