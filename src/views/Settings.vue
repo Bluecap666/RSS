@@ -44,6 +44,13 @@
           is-link 
           @click="confirmClearCache"
         />
+        <van-cell 
+          title="清空所有源" 
+          label="删除所有已订阅的 RSS 源" 
+          is-link 
+          @click="confirmClearAllFeeds"
+          class="danger-cell"
+        />
       </van-cell-group>
 
       <!-- 关于 -->
@@ -232,6 +239,36 @@ async function confirmClearCache() {
   }).catch(() => {})
 }
 
+// 确认清空所有源
+function confirmClearAllFeeds() {
+  showDialog({
+    title: '确认清空',
+    message: `当前共有 ${feedStore.feeds.length} 个 RSS 源。确定要删除所有已订阅的 RSS 源吗？此操作不可恢复！`,
+    showCancelButton: true,
+    cancelButtonText: '取消',
+    confirmButtonText: '清空',
+    confirmButtonColor: '#FF6B6B'
+  }).then(async () => {
+    try {
+      showLoadingToast('正在清空...')
+      // 删除所有源
+      feedStore.clearAllFeeds()
+      // 清除存储中的源数据
+      await storage.clearAllFeeds()
+      showToast('已清空所有源')
+      // 延迟一下再刷新页面，让用户看到提示
+      setTimeout(() => {
+        location.reload()
+      }, 1000)
+    } catch (error) {
+      console.error('Clear all feeds error:', error)
+      showToast('清空失败')
+    } finally {
+      closeToast()
+    }
+  }).catch(() => {})
+}
+
 // 确认重置所有设置
 function confirmResetAll() {
   showDialog({
@@ -289,5 +326,14 @@ function confirmResetAll() {
 .back-btn {
   padding: $spacing-xs;
   color: $text-primary;
+}
+
+.danger-cell {
+  :deep(.van-cell__title) {
+    color: $error-color;
+  }
+  :deep(.van-cell__label) {
+    color: lighten($error-color, 10%);
+  }
 }
 </style>

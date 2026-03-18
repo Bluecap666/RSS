@@ -55,6 +55,17 @@ class StorageService {
     }
   }
 
+  // 清空所有 RSS 源配置
+  clearAllFeeds() {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.FEEDS_CONFIG)
+      return true
+    } catch (error) {
+      console.error('Clear all feeds error:', error)
+      return false
+    }
+  }
+
   // ========== 文章详情 (IndexedDB) ==========
   
   // 保存文章列表
