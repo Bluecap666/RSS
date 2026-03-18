@@ -74,6 +74,7 @@
       class="ie-popup"
       :close-on-click-overlay="true"
       :lock-scroll="false"
+      :z-index="1000"
       @update:show="handlePopupUpdate">
       <div class="ie-panel" @click.stop>
         <div class="ie-header">
