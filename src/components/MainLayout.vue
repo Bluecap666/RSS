@@ -66,11 +66,16 @@
     </aside>
 
     <!-- 导入导出弹窗 -->
-    <van-popup v-model:show="showImportExport" position="bottom" round class="ie-popup" :close-on-click-overlay="true">
+    <van-popup 
+      v-model:show="showImportExport" 
+      position="bottom" 
+      round 
+      class="ie-popup"
+      :close-on-click-overlay="true">
       <div class="ie-panel">
         <div class="ie-header">
           <h3>导入导出 RSS 源</h3>
-          <button @click="showImportExport = false" class="close-btn">
+          <button @click="closePopup" class="close-btn">
             <van-icon name="cross" size="20" />
           </button>
         </div>
@@ -239,6 +244,12 @@ function handleResize() {
   }
 }
 
+// 关闭弹窗
+function closePopup() {
+  console.log('Closing popup manually')
+  showImportExport.value = false
+}
+
 // 导出数据
 function exportData() {
   try {
@@ -253,7 +264,7 @@ function exportData() {
       })
       // 延迟关闭弹窗，让用户看到成功提示
       setTimeout(() => {
-        console.log('Closing popup...')
+        console.log('Closing popup after export...')
         showImportExport.value = false
       }, 500)
     } else {
@@ -268,19 +279,27 @@ function exportData() {
 
 // 触发文件选择
 function triggerImport() {
+  console.log('Triggering file selection...')
   fileInputRef.value?.click()
 }
 
 // 处理文件导入
 function handleFileChange(event) {
   const file = event.target.files[0]
-  if (!file) return
+  console.log('File selected:', file?.name)
+  
+  if (!file) {
+    console.log('No file selected')
+    return
+  }
 
   const reader = new FileReader()
   reader.onload = (e) => {
     try {
+      console.log('File content loaded, importing...')
       const success = storage.importData(e.target.result)
       if (success) {
+        console.log('Import successful!')
         showToast({ message: '导入成功，正在刷新...', type: 'success' })
         showImportExport.value = false
         // 重新加载数据
@@ -288,12 +307,17 @@ function handleFileChange(event) {
           location.reload()
         }, 1000)
       } else {
+        console.log('Import failed: invalid format')
         showToast({ message: '导入失败：文件格式不正确', type: 'fail' })
       }
     } catch (error) {
       console.error('Import error:', error)
       showToast({ message: '导入失败', type: 'fail' })
     }
+  }
+  reader.onerror = () => {
+    console.error('Failed to read file')
+    showToast({ message: '读取文件失败', type: 'fail' })
   }
   reader.readAsText(file)
   
