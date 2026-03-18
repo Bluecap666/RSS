@@ -61,7 +61,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFeedStore } from '../stores/feed'
-import { showToast, showLoadingToast, closeToast } from 'vant'
+import { showToast, showLoadingToast, closeToast, showDialog } from 'vant'
 import rssParser from '../services/rssParser'
 import storage from '../services/storage'
 import { isValidUrl, truncate } from '../utils/helpers'
@@ -73,6 +73,7 @@ const url = ref('')
 const urlError = ref('')
 const loading = ref(false)
 const previewData = ref(null)
+const existingFeedId = ref(null) // 用于存储已存在的 RSS 源 ID
 
 // 验证 URL
 function validateUrl() {
@@ -87,6 +88,13 @@ function validateUrl() {
     previewData.value = null
   } else {
     urlError.value = ''
+    // 检查是否已存在该 RSS 源
+    const existingFeed = feedStore.findFeedByUrl(url.value)
+    if (existingFeed) {
+      existingFeedId.value = existingFeed.id
+    } else {
+      existingFeedId.value = null
+    }
   }
 }
 
@@ -120,31 +128,15 @@ async function submitFeed() {
       throw new Error('无法识别的 RSS 格式')
     }
     
-    // 保存数据
-    const newFeed = feedStore.addFeed({
-      title: result.title,
-      url: url.value,
-      description: result.description,
-      imageUrl: result.imageUrl
-    })
-
-    // 更新文章列表
-    feedStore.updateFeedItems(newFeed.id, result.items)
-    
-    // 持久化存储
-    storage.saveFeeds(feedStore.getAllFeeds())
-    await storage.saveArticles(newFeed.id, result.items)
-    storage.setCacheTime(newFeed.id, Date.now())
-
-    showToast({
-      message: '添加成功',
-      type: 'success'
-    })
-    
-    // 延迟跳转到首页
-    setTimeout(() => {
-      router.push('/')
-    }, 500)
+    // 检查是否已存在该 RSS 源
+    const existingFeed = feedStore.findFeedByUrl(url.value)
+    if (existingFeed) {
+      // 已存在，询问用户如何处理
+      await handleDuplicateFeed(existingFeed, result)
+    } else {
+      // 不存在，直接添加
+      await addNewFeed(result)
+    }
   } catch (error) {
     console.error('Add feed error:', error)
     let errorMessage = '解析失败，请检查链接是否正确'
@@ -177,6 +169,66 @@ async function submitFeed() {
     loading.value = false
     closeToast()
   }
+}
+
+// 处理重复的 RSS 源
+async function handleDuplicateFeed(existingFeed, newData) {
+  try {
+    const result = await showDialog({
+      title: '发现重复的 RSS 源',
+      message: `"${newData.title}" 已经存在于您的订阅中（名称：${existingFeed.title}）。\n\n是否要更新现有订阅的文章列表？`,
+      showCancelButton: true,
+      cancelButtonText: '取消',
+      confirmButtonText: '更新'
+    })
+    
+    if (result.value === 'confirm') {
+      // 用户选择更新，刷新现有订阅的文章
+      feedStore.updateFeedItems(existingFeed.id, newData.items)
+      await storage.saveArticles(existingFeed.id, newData.items)
+      storage.setCacheTime(existingFeed.id, Date.now())
+      
+      showToast({
+        message: '已更新订阅内容',
+        type: 'success'
+      })
+      
+      setTimeout(() => {
+        router.push('/')
+      }, 500)
+    }
+  } catch (error) {
+    // 用户取消操作
+    console.log('用户取消更新')
+  }
+}
+
+// 添加新的 RSS 源
+async function addNewFeed(result) {
+  const newFeed = feedStore.addFeed({
+    title: result.title,
+    url: url.value,
+    description: result.description,
+    imageUrl: result.imageUrl
+  })
+
+  // 更新文章列表
+  feedStore.updateFeedItems(newFeed.id, result.items)
+  
+  // 持久化存储
+  storage.saveFeeds(feedStore.getAllFeeds())
+  await storage.saveArticles(newFeed.id, result.items)
+  storage.setCacheTime(newFeed.id, Date.now())
+
+  showToast({
+    message: '添加成功',
+    type: 'success'
+  })
+  
+  // 延迟跳转到首页
+  setTimeout(() => {
+    router.push('/')
+  }, 500)
 }
 </script>
 

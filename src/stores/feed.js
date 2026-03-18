@@ -17,6 +17,11 @@ export const useFeedStore = defineStore('feed', () => {
     return feeds.value.find(feed => feed.id === id)
   }
 
+  // 根据 URL 检查是否存在
+  const findFeedByUrl = (url) => {
+    return feeds.value.find(feed => feed.url === url)
+  }
+
   // 添加 RSS 源
   const addFeed = (feedData) => {
     const newFeed = {
@@ -83,6 +88,7 @@ export const useFeedStore = defineStore('feed', () => {
     error,
     getAllFeeds,
     getFeedById,
+    findFeedByUrl,
     addFeed,
     removeFeed,
     updateFeed,
