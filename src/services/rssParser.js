@@ -1,7 +1,8 @@
 import { XMLParser } from 'fast-xml-parser'
 
-// CORS 代理服务 (按优先级排序，优先使用国内可用的)
+// CORS 代理服务 (按优先级排序，支持全球访问)
 const CORS_PROXIES = [
+  // === 国内可用代理 ===
   {
     url: 'https://rss2json.com/api.json?rss_url=',
     type: 'rss2json',  // 专门的 RSS 转换服务
@@ -12,6 +13,8 @@ const CORS_PROXIES = [
     type: 'json',  // 返回 JSON 格式
     name: 'AllOrigins'
   },
+  
+  // === 国外专用代理 ===
   {
     url: 'https://corsproxy.io/?',
     type: 'text',
@@ -27,6 +30,8 @@ const CORS_PROXIES = [
     type: 'text',
     name: 'ThingProxy'
   },
+  
+  // === 备用代理 ===
   {
     url: 'https://zuplo.link/cors-anywhere/',
     type: 'text',
@@ -36,6 +41,16 @@ const CORS_PROXIES = [
     url: 'https://proxy-cors.com/',
     type: 'text',
     name: 'ProxyCors'
+  },
+  {
+    url: 'https://cors.bridged.cc/',
+    type: 'text',
+    name: 'Bridged'
+  },
+  {
+    url: 'https://crossorigin.me/',
+    type: 'text',
+    name: 'CrossOrigin'
   }
 ]
 

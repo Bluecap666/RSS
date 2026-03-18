@@ -58,13 +58,9 @@
 
       <!-- 底部按钮 -->
       <div class="sidebar-footer">
-        <button @click="$router.push('/add-feed')" class="add-feed-btn" :title="sidebarCollapsed ? '添加 RSS 源' : ''">
+        <button @click="$router.push('/add-feed')" class="add-feed-btn">
           <van-icon name="plus-o" size="20" />
           <span v-if="!sidebarCollapsed">添加 RSS 源</span>
-        </button>
-        <button @click="showImportExport = true" class="import-export-btn" :title="sidebarCollapsed ? '导入导出' : ''" v-if="!sidebarCollapsed">
-          <van-icon name="share-o" size="20" />
-          <span v-if="!sidebarCollapsed">导入导出</span>
         </button>
       </div>
     </aside>
@@ -247,8 +243,15 @@ function exportData() {
   try {
     const success = storage.exportData()
     if (success) {
-      showToast({ message: '导出成功', type: 'success' })
-      showImportExport.value = false
+      showToast({ 
+        message: '导出成功', 
+        type: 'success',
+        duration: 1500
+      })
+      // 延迟关闭弹窗，让用户看到成功提示
+      setTimeout(() => {
+        showImportExport.value = false
+      }, 500)
     } else {
       showToast({ message: '导出失败', type: 'fail' })
     }
@@ -326,8 +329,7 @@ function handleFileChange(event) {
     
     .feed-item__meta,
     .feed-item__actions,
-    .add-feed-btn span,
-    .import-export-btn span {
+    .add-feed-btn span {
       display: none;
     }
     
@@ -564,8 +566,22 @@ function handleFileChange(event) {
       }
       
       .close-btn {
-        padding: $spacing-xs;
+        padding: $spacing-sm;
         color: $text-secondary;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        border-radius: $radius-sm;
+        transition: all $transition-fast;
+        
+        &:hover {
+          background: $bg-color;
+          color: $error-color;
+        }
+        
+        &:active {
+          transform: scale(0.9);
+        }
       }
     }
     
