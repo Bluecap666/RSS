@@ -62,6 +62,28 @@
           <van-icon name="plus-o" size="20" />
           <span v-if="!sidebarCollapsed">添加 RSS 源</span>
         </button>
+        
+        <!-- 数据管理按钮 (PC 端显示) -->
+        <div v-if="!sidebarCollapsed && !isMobile" class="data-management">
+          <button @click="showImportExport = true" class="data-btn">
+            <van-icon name="share-o" size="18" />
+            <span>导入导出</span>
+          </button>
+          <button @click="confirmClearAllFeeds" class="data-btn danger">
+            <van-icon name="delete-o" size="18" />
+            <span>清空所有源</span>
+          </button>
+        </div>
+        
+        <!-- 移动端只显示导入导出图标 -->
+        <div v-else-if="isMobile" class="mobile-actions">
+          <button @click="showImportExport = true" class="mobile-btn">
+            <van-icon name="share-o" size="20" />
+          </button>
+          <button @click="confirmClearAllFeeds" class="mobile-btn danger">
+            <van-icon name="delete-o" size="20" />
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -263,6 +285,36 @@ watch(showImportExport, (newVal) => {
     showImportExportInner.value = true
   }
 }, { immediate: true })
+
+// 确认清空所有源
+function confirmClearAllFeeds() {
+  showDialog({
+    title: '确认清空',
+    message: `当前共有 ${feeds.value.length} 个 RSS 源。确定要删除所有已订阅的 RSS 源吗？此操作不可恢复！`,
+    showCancelButton: true,
+    cancelButtonText: '取消',
+    confirmButtonText: '清空',
+    confirmButtonColor: '#FF6B6B'
+  }).then(async () => {
+    try {
+      showLoadingToast('正在清空...')
+      // 删除所有源
+      feedStore.clearAllFeeds()
+      // 清除存储中的源数据
+      await storage.clearAllFeeds()
+      showToast('已清空所有源')
+      // 延迟一下再刷新页面，让用户看到提示
+      setTimeout(() => {
+        location.reload()
+      }, 1000)
+    } catch (error) {
+      console.error('Clear all feeds error:', error)
+      showToast('清空失败')
+    } finally {
+      closeToast()
+    }
+  }).catch(() => {})
+}
 
 // 强制关闭弹窗 (使用 v-if 确保完全销毁)
 function forceClosePopup() {
@@ -655,6 +707,64 @@ function handleFileChange(event) {
     
     &:active {
       transform: translateY(0);
+    }
+  }
+  
+  // 数据管理按钮 (PC 端)
+  .data-management {
+    display: flex;
+    gap: $spacing-sm;
+    margin-top: $spacing-sm;
+    
+    .data-btn {
+      flex: 1;
+      padding: $spacing-xs $spacing-sm;
+      background: $bg-secondary;
+      color: $text-primary;
+      border-radius: $radius-sm;
+      font-size: $font-size-xs;
+      @include flex-center;
+      gap: $spacing-xs;
+      transition: all $transition-fast;
+      
+      &:hover {
+        background: $primary-color;
+        color: $text-light;
+      }
+      
+      &.danger {
+        &:hover {
+          background: $error-color;
+          color: $text-light;
+        }
+      }
+    }
+  }
+  
+  // 移动端操作按钮
+  .mobile-actions {
+    display: flex;
+    justify-content: space-around;
+    margin-top: $spacing-sm;
+    
+    .mobile-btn {
+      padding: $spacing-sm;
+      background: $bg-secondary;
+      color: $text-primary;
+      border-radius: $radius-md;
+      transition: all $transition-fast;
+      
+      &:hover {
+        background: $primary-color;
+        color: $text-light;
+      }
+      
+      &.danger {
+        &:hover {
+          background: $error-color;
+          color: $text-light;
+        }
+      }
     }
   }
 }
