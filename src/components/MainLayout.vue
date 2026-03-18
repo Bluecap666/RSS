@@ -72,21 +72,22 @@
       round 
       class="ie-popup"
       :close-on-click-overlay="true"
-      @update:show="onPopupUpdate">
-      <div class="ie-panel">
+      :lock-scroll="false"
+      @click-overlay="handleOverlayClick">
+      <div class="ie-panel" @click.stop>
         <div class="ie-header">
           <h3>导入导出 RSS 源</h3>
-          <button @click="handleCloseClick" class="close-btn">
+          <button @click.stop="handleCloseClick" class="close-btn" type="button">
             <van-icon name="cross" size="20" />
           </button>
         </div>
         <div class="ie-content">
-          <button @click="exportData" class="ie-btn export">
+          <button @click.stop="exportData" class="ie-btn export" type="button">
             <van-icon name="download-o" size="24" />
             <span>导出数据</span>
             <p>备份所有 RSS 源配置</p>
           </button>
-          <button @click="handleImportClick" class="ie-btn import">
+          <button @click.stop="handleImportClick" class="ie-btn import" type="button">
             <van-icon name="upload-o" size="24" />
             <span>导入数据</span>
             <p>恢复之前备份的数据</p>
@@ -245,24 +246,35 @@ function handleResize() {
   }
 }
 
+// 弹窗遮罩点击处理
+function handleOverlayClick() {
+  console.log('[Overlay] Clicked')
+  handleCloseClick()
+}
+
 // 弹窗状态变化监听
 function onPopupUpdate(show) {
-  console.log('Popup state changed:', show)
+  console.log('[Popup] State changed:', show)
   if (!show) {
-    console.log('Popup is closing')
+    console.log('[Popup] Closing...')
   } else {
-    console.log('Popup is opening')
+    console.log('[Popup] Opening...')
   }
 }
 
 // 处理关闭按钮点击
 function handleCloseClick() {
-  console.log('Close button clicked, forcing close...')
+  console.log('[Close Button] Clicked, forcing close...')
   showImportExport.value = false
-  // 确保关闭
+  
+  // 双重确认关闭
   setTimeout(() => {
-    console.log('Force close timeout, showImportExport:', showImportExport.value)
-  }, 100)
+    console.log('[Close Button] Timeout check, showImportExport:', showImportExport.value)
+    if (showImportExport.value) {
+      console.warn('[Close Button] Still open, forcing again...')
+      showImportExport.value = false
+    }
+  }, 50)
 }
 
 // 处理导入按钮点击
