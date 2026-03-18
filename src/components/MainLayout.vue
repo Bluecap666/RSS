@@ -65,8 +65,9 @@
       </div>
     </aside>
 
-    <!-- 导入导出弹窗 - 使用 nextTick 确保状态同步 -->
+    <!-- 导入导出弹窗 - 使用 v-if 确保完全销毁 -->
     <van-popup 
+      v-if="showImportExport"
       v-model:show="showImportExport" 
       position="bottom" 
       round 
