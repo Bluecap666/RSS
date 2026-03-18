@@ -71,11 +71,12 @@
       position="bottom" 
       round 
       class="ie-popup"
-      :close-on-click-overlay="true">
+      :close-on-click-overlay="true"
+      @update:show="onPopupUpdate">
       <div class="ie-panel">
         <div class="ie-header">
           <h3>导入导出 RSS 源</h3>
-          <button @click="closePopup" class="close-btn">
+          <button @click="handleCloseClick" class="close-btn">
             <van-icon name="cross" size="20" />
           </button>
         </div>
@@ -85,7 +86,7 @@
             <span>导出数据</span>
             <p>备份所有 RSS 源配置</p>
           </button>
-          <button @click="triggerImport" class="ie-btn import">
+          <button @click="handleImportClick" class="ie-btn import">
             <van-icon name="upload-o" size="24" />
             <span>导入数据</span>
             <p>恢复之前备份的数据</p>
@@ -99,7 +100,7 @@
       ref="fileInputRef"
       type="file"
       accept=".json"
-      style="display: none"
+      style="display: none; visibility: hidden; position: absolute; width: 1px; height: 1px; opacity: 0;"
       @change="handleFileChange"
     />
 
@@ -244,9 +245,35 @@ function handleResize() {
   }
 }
 
+// 弹窗状态变化监听
+function onPopupUpdate(show) {
+  console.log('Popup state changed:', show)
+  if (!show) {
+    console.log('Popup is closing')
+  } else {
+    console.log('Popup is opening')
+  }
+}
+
+// 处理关闭按钮点击
+function handleCloseClick() {
+  console.log('Close button clicked, forcing close...')
+  showImportExport.value = false
+  // 确保关闭
+  setTimeout(() => {
+    console.log('Force close timeout, showImportExport:', showImportExport.value)
+  }, 100)
+}
+
+// 处理导入按钮点击
+function handleImportClick() {
+  console.log('Import button clicked')
+  triggerImport()
+}
+
 // 关闭弹窗
 function closePopup() {
-  console.log('Closing popup manually')
+  console.log('closePopup called')
   showImportExport.value = false
 }
 
@@ -279,8 +306,23 @@ function exportData() {
 
 // 触发文件选择
 function triggerImport() {
-  console.log('Triggering file selection...')
-  fileInputRef.value?.click()
+  console.log('triggerImport called')
+  console.log('fileInputRef:', fileInputRef.value)
+  
+  if (!fileInputRef.value) {
+    console.error('fileInputRef is null!')
+    showToast({ message: '导入错误：文件输入未找到', type: 'fail' })
+    return
+  }
+  
+  try {
+    console.log('Clicking file input...')
+    fileInputRef.value.click()
+    console.log('File input clicked successfully')
+  } catch (error) {
+    console.error('Failed to click file input:', error)
+    showToast({ message: '无法打开文件选择器', type: 'fail' })
+  }
 }
 
 // 处理文件导入
