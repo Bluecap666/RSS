@@ -719,7 +719,7 @@ function handleFileChange(event) {
     .data-btn {
       flex: 1;
       padding: $spacing-xs $spacing-sm;
-      background: $bg-secondary;
+      background: rgba($primary-color, 0.1);
       color: $text-primary;
       border-radius: $radius-sm;
       font-size: $font-size-xs;
@@ -749,7 +749,7 @@ function handleFileChange(event) {
     
     .mobile-btn {
       padding: $spacing-sm;
-      background: $bg-secondary;
+      background: rgba($primary-color, 0.1);
       color: $text-primary;
       border-radius: $radius-md;
       transition: all $transition-fast;
