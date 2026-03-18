@@ -65,16 +65,15 @@
       </div>
     </aside>
 
-    <!-- 导入导出弹窗 - 使用 v-if 确保完全销毁 -->
+    <!-- 导入导出弹窗 -->
     <van-popup 
       v-if="showImportExport"
-      :show="showImportExport"
+      :show="true"
       position="bottom" 
       round 
       class="ie-popup"
-      :close-on-click-overlay="true"
+      :close-on-click-overlay="false"
       :lock-scroll="false"
-      :z-index="1000"
       @update:show="handlePopupUpdate">
       <div class="ie-panel" @click.stop>
         <div class="ie-header">
@@ -99,13 +98,6 @@
     </van-popup>
 
     <!-- 隐藏的文件输入 (使用 v-show 而不是 display:none) -->
-    <input
-      ref="fileInputRef"
-      type="file"
-      accept=".json"
-      style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0.01;"
-      @change="handleFileChange"
-    />
 
     <!-- 主内容区域 -->
     <main class="main-content">
@@ -129,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useFeedStore } from '../stores/feed'
 import { showToast, showLoadingToast, closeToast, showDialog } from 'vant'
@@ -146,6 +138,7 @@ const showOverlay = ref(false)
 const loading = ref(false)
 const currentFeedId = ref(null)
 const showImportExport = ref(false)
+const showImportExportInner = ref(false)  // 弹窗内部状态
 const fileInputRef = ref(null)
 
 // 获取所有 RSS 源
@@ -262,13 +255,25 @@ function handlePopupUpdate(show) {
   }
 }
 
+// 监听外部状态，同步到内部
+watch(showImportExport, (newVal) => {
+  console.log('[Watch] showImportExport changed to:', newVal)
+  if (newVal) {
+    // 打开弹窗：先设置内部状态为 true
+    showImportExportInner.value = true
+  }
+}, { immediate: true })
+
 // 强制关闭弹窗 (使用 v-if 确保完全销毁)
 function forceClosePopup() {
   console.log('[Force Close] Starting...')
   
-  // 直接设置为 false,v-if 会自动销毁组件
+  // 关闭外部状态
   showImportExport.value = false
-  console.log('[Force Close] Set showImportExport to false')
+  // 关闭内部状态
+  showImportExportInner.value = false
+  
+  console.log('[Force Close] Set both states to false')
   
   // 等待 nextTick 后确认 DOM 是否移除
   nextTick(() => {
@@ -420,6 +425,11 @@ function handleFileChange(event) {
 <style lang="scss" scoped>
 @import '../styles/variables.scss';
 @import '../styles/mixins.scss';
+
+// 强制移除 Vant 遮罩层的 z-index (使用最高优先级)
+:deep(.van-overlay) {
+  z-index: 0 !important;
+}
 
 .main-layout {
   display: flex;
@@ -664,8 +674,8 @@ function handleFileChange(event) {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 999; // 确保在侧边栏之下，主内容之上
-  backdrop-filter: blur(2px); // 毛玻璃效果
+  z-index: 999;
+  backdrop-filter: blur(2px);
 }
 
 
