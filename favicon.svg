@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <circle cx="50" cy="50" r="48" fill="url(#grad)"/>
+  
+  <!-- RSS 图标 -->
+  <g fill="#FFFFFF">
+    <!-- 外弧 -->
+    <path d="M 25,75 A 25,25 0 0 1 50,50" stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round"/>
+    
+    <!-- 中弧 -->
+    <path d="M 25,55 A 45,45 0 0 1 70,10" stroke="#FFFFFF" stroke-width="8" fill="none" stroke-linecap="round"/>
+    
+    <!-- 圆点 -->
+    <circle cx="75" cy="75" r="10"/>
+  </g>
+</svg>
