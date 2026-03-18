@@ -95,12 +95,12 @@
       </div>
     </van-popup>
 
-    <!-- 隐藏的文件输入 -->
+    <!-- 隐藏的文件输入 (使用 v-show 而不是 display:none) -->
     <input
       ref="fileInputRef"
       type="file"
       accept=".json"
-      style="display: none; visibility: hidden; position: absolute; width: 1px; height: 1px; opacity: 0;"
+      style="position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0.01;"
       @change="handleFileChange"
     />
 
@@ -307,21 +307,46 @@ function exportData() {
 // 触发文件选择
 function triggerImport() {
   console.log('triggerImport called')
-  console.log('fileInputRef:', fileInputRef.value)
+  console.log('fileInputRef value:', fileInputRef.value)
   
-  if (!fileInputRef.value) {
-    console.error('fileInputRef is null!')
-    showToast({ message: '导入错误：文件输入未找到', type: 'fail' })
-    return
+  // 方法 1: 尝试使用 ref
+  if (fileInputRef.value) {
+    try {
+      console.log('Using ref method...')
+      fileInputRef.value.click()
+      console.log('File input clicked via ref')
+      return
+    } catch (error) {
+      console.warn('Ref method failed, trying fallback:', error)
+    }
   }
   
+  // 方法 2: 创建临时元素 (备用方案)
+  console.log('Creating temporary file input...')
+  const tempInput = document.createElement('input')
+  tempInput.type = 'file'
+  tempInput.accept = '.json'
+  tempInput.style.cssText = 'position: fixed; top: -9999px; left: -9999px; opacity: 0.01;'
+  
+  tempInput.onchange = (e) => {
+    console.log('Temporary input file changed')
+    handleFileChange(e)
+    // 清理临时元素
+    setTimeout(() => {
+      document.body.removeChild(tempInput)
+    }, 100)
+  }
+  
+  document.body.appendChild(tempInput)
+  console.log('Temporary input created and appended')
+  
   try {
-    console.log('Clicking file input...')
-    fileInputRef.value.click()
-    console.log('File input clicked successfully')
+    tempInput.click()
+    console.log('Temporary input clicked successfully')
   } catch (error) {
-    console.error('Failed to click file input:', error)
-    showToast({ message: '无法打开文件选择器', type: 'fail' })
+    console.error('Failed to click temporary input:', error)
+    showToast({ message: '无法打开文件选择器，请检查浏览器权限', type: 'fail' })
+    document.body.removeChild(tempInput)
   }
 }
 
