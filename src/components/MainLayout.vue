@@ -163,7 +163,8 @@ onMounted(async () => {
 // 加载 RSS 源
 async function loadFeeds() {
   const savedFeeds = storage.getFeeds()
-  if (savedFeeds.length > 0) {
+  if (savedFeeds.length > 0 && feeds.value.length === 0) {
+    // 只在 store 为空时才加载，避免重复添加
     savedFeeds.forEach(feed => {
       feedStore.addFeed(feed)
     })
@@ -241,8 +242,10 @@ function handleResize() {
 // 导出数据
 function exportData() {
   try {
+    console.log('Exporting data...')
     const success = storage.exportData()
     if (success) {
+      console.log('Export success!')
       showToast({ 
         message: '导出成功', 
         type: 'success',
@@ -250,9 +253,11 @@ function exportData() {
       })
       // 延迟关闭弹窗，让用户看到成功提示
       setTimeout(() => {
+        console.log('Closing popup...')
         showImportExport.value = false
       }, 500)
     } else {
+      console.log('Export failed')
       showToast({ message: '导出失败', type: 'fail' })
     }
   } catch (error) {
