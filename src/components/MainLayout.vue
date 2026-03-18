@@ -286,7 +286,24 @@ function forceClosePopup() {
       }, 50)
     } else {
       console.log('[Force Close] Already closed in nextTick')
-      console.log('[Force Close] .ie-panel should be removed')
+      // 立即实际检查 DOM 中是否还有 .ie-panel
+      const checkDOM = document.querySelector('.ie-panel')
+      if (checkDOM) {
+        console.warn('[Force Close] ⚠️ WARNING: .ie-panel still in DOM! Value:', showImportExport.value)
+        console.warn('[Force Close] Element:', checkDOM)
+        // 等待 100ms 再检查一次
+        setTimeout(() => {
+          const checkAgain = document.querySelector('.ie-panel')
+          if (checkAgain) {
+            console.error('[Force Close] ❌ ERROR: .ie-panel PERSISTS in DOM after 100ms!')
+            console.error('[Force Close] This might be a Vant bug')
+          } else {
+            console.log('[Force Close] ✅ .ie-panel finally removed from DOM')
+          }
+        }, 100)
+      } else {
+        console.log('[Force Close] ✅ .ie-panel removed from DOM')
+      }
     }
   })
 }
