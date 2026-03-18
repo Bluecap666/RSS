@@ -1,13 +1,15 @@
 <template>
   <div class="main-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
     <!-- 侧边栏 -->
-    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed, 'mobile-hidden': isMobile && !showOverlay }">
+    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed, 'mobile-visible': isMobile && showOverlay }">
       <!-- 侧边栏头部 -->
       <div class="sidebar-header">
-        <button @click="toggleSidebar" class="menu-btn">
-          <van-icon name="bars" size="24" />
-        </button>
-        <h2 v-if="!sidebarCollapsed" class="sidebar-title">RSS 源</h2>
+        <div class="header-left">
+          <button @click="toggleSidebar" class="menu-btn" v-if="isMobile">
+            <van-icon name="cross" size="24" />
+          </button>
+          <h2 class="sidebar-title">RSS 源</h2>
+        </div>
         <button @click="toggleSidebar" class="collapse-btn" v-if="!isMobile">
           <van-icon :name="sidebarCollapsed ? 'arrow-expand' : 'arrow-fold'" size="20" />
         </button>
@@ -102,6 +104,17 @@
 
     <!-- 主内容区域 -->
     <main class="main-content">
+      <!-- 顶部工具栏 -->
+      <div class="top-toolbar" v-if="isMobile">
+        <button @click="toggleSidebar" class="toolbar-btn">
+          <van-icon name="bars" size="24" />
+        </button>
+        <h1 class="toolbar-title">RSS Reader</h1>
+        <button @click="showImportExport = true" class="toolbar-btn">
+          <van-icon name="share-o" size="22" />
+        </button>
+      </div>
+      
       <slot></slot>
     </main>
 
@@ -298,10 +311,11 @@ function handleFileChange(event) {
   border-right: 1px solid $border-color;
   display: flex;
   flex-direction: column;
-  transition: all $transition-normal;
+  transition: transform $transition-normal, width $transition-normal;
   position: relative;
   z-index: 100;
-  box-shadow: $shadow-sm;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+  flex-shrink: 0; // 防止被压缩
   
   &.collapsed {
     width: 60px;
@@ -312,7 +326,8 @@ function handleFileChange(event) {
     
     .feed-item__meta,
     .feed-item__actions,
-    .add-feed-btn span {
+    .add-feed-btn span,
+    .import-export-btn span {
       display: none;
     }
     
@@ -327,28 +342,51 @@ function handleFileChange(event) {
       @include text-truncate(1);
     }
   }
-  
-  &.mobile-hidden {
-    transform: translateX(-100%);
-  }
 }
 
 .sidebar-header {
   height: 60px;
   padding: 0 $spacing-md;
   border-bottom: 1px solid $border-color;
-  @include flex-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    flex: 1;
+    
+    .menu-btn {
+      padding: $spacing-xs;
+      background: transparent;
+      border: none;
+      color: $text-primary;
+      cursor: pointer;
+      border-radius: $radius-sm;
+      transition: background $transition-fast;
+      
+      &:hover {
+        background: $bg-color;
+      }
+    }
+  }
   
   .sidebar-title {
     font-size: $font-size-lg;
     font-weight: 600;
     color: $text-primary;
     margin: 0;
+    white-space: nowrap;
   }
   
   .collapse-btn {
     padding: $spacing-xs;
+    background: transparent;
+    border: none;
     color: $text-secondary;
+    cursor: pointer;
     border-radius: $radius-sm;
     transition: background $transition-fast;
     
@@ -504,14 +542,10 @@ function handleFileChange(event) {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 99;
+  z-index: 999; // 确保在侧边栏之下，主内容之上
+  backdrop-filter: blur(2px); // 毛玻璃效果
 }
 
-.menu-btn {
-  padding: $spacing-xs;
-  color: $text-primary;
-  margin-right: $spacing-sm;
-}
 
 .ie-popup {
   .ie-panel {
@@ -579,16 +613,30 @@ function handleFileChange(event) {
 
 // 移动端适配
 @media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  
   .sidebar {
     position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 280px !important; // 移动端展开时保持完整宽度
+    width: 80%; // 占据屏幕 80% 宽度，更合理
+    max-width: 300px; // 最大宽度限制
+    transform: translateX(-100%); // 默认隐藏在左侧外
     box-shadow: $shadow-lg;
+    z-index: 1000;
     
+    &.mobile-visible {
+      transform: translateX(0); // 显示时滑入
+    }
+    
+    // 移动端不响应 collapsed 类
     &.collapsed {
-      transform: translateX(0);
+      width: 80%;
+      max-width: 300px;
+      transform: translateX(-100%);
       
       .sidebar-title {
         display: block;
@@ -603,8 +651,62 @@ function handleFileChange(event) {
     }
   }
   
+  .main-content {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto;
+  }
+  
+  .top-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 50px;
+    padding: 0 $spacing-md;
+    background: $card-bg;
+    border-bottom: 1px solid $border-color;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    
+    .toolbar-btn {
+      padding: $spacing-xs;
+      background: transparent;
+      border: none;
+      color: $text-primary;
+      cursor: pointer;
+      border-radius: $radius-sm;
+      transition: background $transition-fast;
+      
+      &:hover {
+        background: $bg-color;
+      }
+      
+      &:active {
+        transform: scale(0.9);
+      }
+    }
+    
+    .toolbar-title {
+      font-size: $font-size-lg;
+      font-weight: 600;
+      color: $text-primary;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+    }
+  }
+  
   .overlay {
     display: block;
+  }
+}
+
+// 桌面端适配
+@media (min-width: 769px) {
+  .top-toolbar {
+    display: none; // 桌面端隐藏工具栏
   }
 }
 </style>
