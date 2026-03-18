@@ -271,14 +271,22 @@ function forceClosePopup() {
         console.log('[Force Close] timeout check, value:', showImportExport.value)
         if (showImportExport.value) {
           console.error('[Force Close] BUG! Still open after all attempts!')
+          // 检查 DOM 中是否还有 .ie-panel
+          const panelInDOM = document.querySelector('.ie-panel')
+          console.log('[Force Close] .ie-panel in DOM:', panelInDOM !== null)
+          if (panelInDOM) {
+            console.error('[Force Close] .ie-panel still exists in DOM!')
+          }
           // 最后一次尝试
           showImportExport.value = false
         } else {
           console.log('[Force Close] Successfully closed')
+          console.log('[Force Close] .ie-panel removed from DOM')
         }
       }, 50)
     } else {
       console.log('[Force Close] Already closed in nextTick')
+      console.log('[Force Close] .ie-panel should be removed')
     }
   })
 }
