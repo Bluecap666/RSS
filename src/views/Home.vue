@@ -23,20 +23,11 @@
             @click="goToFeed(feed.id)"
             @refresh="refreshFeed(feed)"
             @edit="editFeed(feed)"
-            @delete="confirmDelete(feed)"
+            @delete="deleteFeed(feed)"
           />
         </div>
       </div>
     </div>
-
-    <!-- 删除确认对话框 -->
-    <van-dialog
-      v-model:show="showDeleteDialog"
-      title="确认删除"
-      message="确定要删除这个 RSS 源吗？删除后无法恢复。"
-      show-cancel-button
-      @confirm="deleteFeed"
-    />
   </MainLayout>
 </template>
 
@@ -53,9 +44,6 @@ import storage from '../services/storage'
 const router = useRouter()
 const feedStore = useFeedStore()
 
-const showDeleteDialog = ref(false)
-const feedToDelete = ref(null)
-
 // 获取所有 RSS 源
 const feeds = computed(() => feedStore.getAllFeeds())
 
@@ -66,6 +54,9 @@ onMounted(async () => {
 
 // 加载 RSS 源
 async function loadFeeds() {
+  // 先清空现有数据，避免重复
+  feedStore.clearAllFeeds()
+  
   const savedFeeds = storage.getFeeds()
   if (savedFeeds.length > 0) {
     savedFeeds.forEach(feed => {
@@ -102,23 +93,18 @@ function editFeed(feed) {
   showToast('编辑功能开发中...')
 }
 
-// 确认删除
-function confirmDelete(feed) {
-  feedToDelete.value = feed
-  showDeleteDialog.value = true
-}
-
 // 删除 RSS 源
-async function deleteFeed() {
-  if (!feedToDelete.value) return
-
-  const feed = feedToDelete.value
-  feedStore.removeFeed(feed.id)
-  storage.removeFeedConfig(feed.id)
-  await storage.removeArticles(feed.id)
-  
-  showToast('已删除')
-  feedToDelete.value = null
+async function deleteFeed(feed) {
+  try {
+    feedStore.removeFeed(feed.id)
+    storage.removeFeedConfig(feed.id)
+    await storage.removeArticles(feed.id)
+    
+    showToast('已删除')
+  } catch (error) {
+    console.error('Delete error:', error)
+    showToast('删除失败')
+  }
 }
 </script>
 
