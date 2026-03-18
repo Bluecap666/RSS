@@ -102,7 +102,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useSettingsStore, useFeedStore } from '../stores/feed'
+import { useSettingsStore } from '../stores/settings'
+import { useFeedStore } from '../stores/feed'
 import { showToast, showLoadingToast, closeToast, showDialog } from 'vant'
 import storage from '../services/storage'
 

@@ -125,7 +125,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useSettingsStore } from '../stores/feed'
+import { useSettingsStore } from '../stores/settings'
 import { formatDate, getReadingTime, stripHtml } from '../utils/helpers'
 
 const route = useRoute()
