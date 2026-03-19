@@ -33,7 +33,7 @@
           <div
             v-for="feed in feeds"
             :key="feed.id"
-            :class="['feed-item', { active: currentFeedId === feed.id }]"
+            :class="['feed-item', { active: isActiveFeed(feed.id) }]"
             @click="selectFeed(feed.id)"
           >
             <div class="feed-item__content">
@@ -158,12 +158,6 @@ const fileInputRef = ref(null)
 // 获取所有 RSS 源
 const feeds = computed(() => feedStore.getAllFeeds())
 
-// 当前选中的 RSS 源 ID（从路由获取）
-const currentFeedId = computed(() => {
-  const feedId = route.params.id
-  return feedId || null
-})
-
 // 是否为移动设备
 const isMobile = computed(() => window.innerWidth < 768)
 
@@ -184,6 +178,12 @@ async function loadFeeds() {
       feedStore.addFeed(feed)
     })
   }
+}
+
+// 是否为当前选中的 RSS 源
+function isActiveFeed(feedId) {
+  const activeId = route.params.id
+  return activeId === feedId
 }
 
 // 选择 RSS 源
