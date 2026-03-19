@@ -151,13 +151,18 @@ const feedStore = useFeedStore()
 const sidebarCollapsed = ref(false)
 const showOverlay = ref(false)
 const loading = ref(false)
-const currentFeedId = ref(null)
 const showImportExport = ref(false)
 const showImportExportInner = ref(false)  // 弹窗内部状态
 const fileInputRef = ref(null)
 
 // 获取所有 RSS 源
 const feeds = computed(() => feedStore.getAllFeeds())
+
+// 当前选中的 RSS 源 ID（从路由获取）
+const currentFeedId = computed(() => {
+  const feedId = route.params.id
+  return feedId || null
+})
 
 // 是否为移动设备
 const isMobile = computed(() => window.innerWidth < 768)
@@ -168,13 +173,6 @@ onMounted(async () => {
   // 监听窗口大小变化
   window.addEventListener('resize', handleResize)
   handleResize()
-  
-  // 默认选中第一个 RSS 源
-  setTimeout(() => {
-    if (feeds.value.length > 0 && !currentFeedId.value) {
-      selectFeed(feeds.value[0].id)
-    }
-  }, 500)
 })
 
 // 加载 RSS 源
@@ -191,8 +189,7 @@ async function loadFeeds() {
 // 选择 RSS 源
 function selectFeed(feedId) {
   console.log('Selecting feed:', feedId)
-  currentFeedId.value = feedId
-  // 跳转到该 RSS 源的文章列表页面
+  // 直接跳转，由路由更新 currentFeedId
   router.push(`/feed/${feedId}`)
   console.log('Navigated to:', `/feed/${feedId}`)
   
